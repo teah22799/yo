@@ -10,18 +10,19 @@ from pathlib import Path
 import yt_dlp
 
 
-def download_video(url, output_path="downloads"):
+def download_video(url, output_path="downloads", cookies_file="cookies.txt"):
     """
     دانلود ویدیو از یوتیوب
     
     Args:
         url: لینک ویدیو یوتیوب
         output_path: مسیر ذخیره فایل
+        cookies_file: مسیر فایل cookies
     """
     # ساخت پوشه خروجی
     Path(output_path).mkdir(parents=True, exist_ok=True)
     
-    # تنظیمات دانلود با راه‌حل‌های ضد-bot
+    # تنظیمات دانلود
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': f'{output_path}/%(title)s.%(ext)s',
@@ -30,7 +31,10 @@ def download_video(url, output_path="downloads"):
         'no_warnings': False,
         'progress_hooks': [progress_hook],
         
-        # تنظیمات ضد-bot detection
+        # استفاده از cookies
+        'cookiefile': cookies_file if os.path.exists(cookies_file) else None,
+        
+        # تنظیمات ضد-bot
         'extractor_args': {
             'youtube': {
                 'player_client': ['android', 'web'],
@@ -46,14 +50,9 @@ def download_video(url, output_path="downloads"):
             'Sec-Fetch-Mode': 'navigate',
         },
         
-        # استفاده از IPv4 (گاهی IPv6 مشکل داره)
         'source_address': '0.0.0.0',
-        
-        # تلاش مجدد در صورت خطا
         'retries': 10,
         'fragment_retries': 10,
-        
-        # تاخیر بین درخواست‌ها
         'sleep_interval': 1,
         'max_sleep_interval': 5,
     }
@@ -61,6 +60,8 @@ def download_video(url, output_path="downloads"):
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             print(f"🎬 شروع دانلود: {url}")
+            if os.path.exists(cookies_file):
+                print("🍪 استفاده از cookies برای احراز هویت")
             info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info)
             print(f"✅ دانلود کامل شد: {filename}")
@@ -90,7 +91,6 @@ def main():
     
     video_url = sys.argv[1]
     
-    # بررسی اعتبار URL
     if not ('youtube.com' in video_url or 'youtu.be' in video_url):
         print("⚠️  هشدار: این لینک شبیه یوتیوب نیست")
     
