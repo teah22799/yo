@@ -21,7 +21,7 @@ def download_video(url, output_path="downloads"):
     # ساخت پوشه خروجی
     Path(output_path).mkdir(parents=True, exist_ok=True)
     
-    # تنظیمات دانلود
+    # تنظیمات دانلود با راه‌حل‌های ضد-bot
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': f'{output_path}/%(title)s.%(ext)s',
@@ -29,8 +29,33 @@ def download_video(url, output_path="downloads"):
         'quiet': False,
         'no_warnings': False,
         'progress_hooks': [progress_hook],
-        # محدودیت سرعت (اختیاری - برای جلوگیری از مسدود شدن)
-        # 'ratelimit': 1000000,  # 1MB/s
+        
+        # تنظیمات ضد-bot detection
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web'],
+                'player_skip': ['webpage', 'configs'],
+            }
+        },
+        
+        # User-Agent واقعی
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-us,en;q=0.5',
+            'Sec-Fetch-Mode': 'navigate',
+        },
+        
+        # استفاده از IPv4 (گاهی IPv6 مشکل داره)
+        'source_address': '0.0.0.0',
+        
+        # تلاش مجدد در صورت خطا
+        'retries': 10,
+        'fragment_retries': 10,
+        
+        # تاخیر بین درخواست‌ها
+        'sleep_interval': 1,
+        'max_sleep_interval': 5,
     }
     
     try:
