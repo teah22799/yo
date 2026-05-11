@@ -26,7 +26,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Setup Node.js (برای yt-dlp)
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -42,9 +42,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       
+      - name: Setup cookies
+        run: |
+          echo "${{ secrets.YOUTUBE_COOKIES }}" > cookies.txt
+        
       - name: Download video
         run: |
           python download.py "${{ inputs.video_url }}"
+      
+      - name: Cleanup cookies
+        if: always()
+        run: |
+          rm -f cookies.txt
       
       - name: Upload video as artifact
         uses: actions/upload-artifact@v4
