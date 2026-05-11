@@ -26,6 +26,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - name: Setup Node.js (برای yt-dlp)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
